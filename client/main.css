@@ -1,0 +1,26 @@
+input{
+  width: 200px;
+  height: 21px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.control__add-line{
+  display: block;
+  width: 200px;
+  height: 21px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.control__show-result{
+  width: 200px;
+  height: 21px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.table{
+  width: 200px;
+  background-color: gray;
+}
