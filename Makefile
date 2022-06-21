@@ -1,4 +1,4 @@
-ifneq (,$(wildcard ./.env))
+ ifneq (,$(wildcard ./.env))
     include .env
     export
 endif
@@ -9,17 +9,17 @@ help:
 install-meteor:
 	npm install meteor -g
 
-build:
+-build:
 	(cd ${APP_DEV_PATH} && meteor create --svelte ${APP_NAME}-app)
 	mv "${APP_DEV_PATH}/${APP_NAME}-app" "${APP_DEV_PATH}/${APP_NAME}-app-dev"
 	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && rm -r -f client imports server tests)
-	cp -a "." "${APP_DEV_PATH}/${APP_NAME}-app-dev"
+	cp -a "./build/." "${APP_DEV_PATH}/${APP_NAME}-app-dev"
 	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && make set-up)
 
-build--run: build run
+-build--run: build run
 
-build--up: build up
-build--up--no-docker: build up--no-docker
+-build--up: build up
+-build--up--no-docker: build up--no-docker
 
 set-up:
 	meteor npm install
@@ -53,6 +53,7 @@ deploy--no-docker:
 	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/.gitignore" "${APP_PATH}/${APP_NAME}-app"
 	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/Makefile" "${APP_PATH}/${APP_NAME}-app"
 	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/random-list-app.code-workspace" "${APP_PATH}/${APP_NAME}-app"
+	(cd ${APP_PATH}/${APP_NAME}-app/programs/server && npm install)
 
 deploy--run--no-docker: deploy--no-docker run-bundle--no-docker
 
@@ -64,10 +65,11 @@ run-bundle:
 	docker-compose -p ${APP_NAME} -f "${APP_PATH}/${APP_NAME}-app/docker-compose.yaml" --env-file .env up
 
 run-bundle--no-docker:
-	(cd ${APP_PATH}/${APP_NAME}-app/programs/server && npm install)
-# 	export MONGO_URL=${MONGO_URL}
-# 	export ROOT_URL=${ROOT_URL}
-# 	(cd ${APP_PATH}/${APP_NAME}-app && node main.js)
+	source "./.env"
+ 	(cd "${APP_PATH}/${APP_NAME}-app" && node main.js)
+
+del-app:
+	rm -r -f "${APP_DEV_PATH}/${APP_NAME}-app-dev"
 
 del-bundle:
 	rm -r -f "${APP_PATH}/${APP_NAME}-app"
