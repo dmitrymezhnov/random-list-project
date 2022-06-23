@@ -1,48 +1,48 @@
-ifneq (,$(wildcard ./.env))
+ ifneq (,$(wildcard ./.env))
     include .env
     export
 endif
 
 help:
-	echo test
+	echo "coming soon..."
+
+install-meteor:
+	npm install meteor -g
+
+init:
+	nvm use ${NODE_VERSION}
+
+set-up:
+	meteor npm install
+	meteor add dev-error-overlay
+	meteor add accounts-password
+	meteor npm install --save bcrypt
+	meteor remove insecure
+	meteor remove autopublish
+	meteor add meteortesting:mocha
+	meteor npm install --save-dev chai
+
+set-up--run: set-up run
 
 run:
-	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && meteor)
+	(cd "${APP_DEV_PATH}" && meteor)
 
 up: deploy run-bundle
 
-up--no-docker: deploy--no-docker run-bundle--no-docker
-
 deploy:
-	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && meteor build ${APP_DEV_PATH} --server-only --directory --architecture os.linux.x86_64)
-	mv "${APP_PATH}/bundle" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/." "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/.env" "${APP_PATH}/${APP_NAME}-app"
+	meteor build ${APPS_PATH} --server-only --directory --architecture os.linux.x86_64
+	mv "${APPS_PATH}/bundle" "${APP_PATH}"
+	cp -a "${APP_DEV_PATH}/build/." "${APP_PATH}"
+	cp -a "${APP_DEV_PATH}/.env" "${APP_PATH}"
 
 deploy--run: deploy run-bundle
-
-deploy--no-docker:
-	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && meteor build ${APP_PATH} --server-only --directory)
-	mv "${APP_PATH}/bundle" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/.gitignore" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/Makefile" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/random-list-app.code-workspace" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/.env.example" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/.env" "${APP_PATH}/${APP_NAME}-app"
-	(cd ${APP_PATH}/${APP_NAME}-app/programs/server && npm install)
-
-deploy--run--no-docker: deploy--no-docker run-bundle--no-docker
 
 clear-docker-cache:
 	docker builder prune -f
 	docker builder prune -f
 
 run-bundle:
-	docker-compose -p ${APP_NAME} -f "${APP_PATH}/${APP_NAME}-app/docker-compose.yaml" --env-file .env up
-
-run-bundle--no-docker:
-	source "./.env"
- 	(cd "${APP_PATH}/${APP_NAME}-app" && node main.js)
+	docker-compose -p ${APP_NAME} -f "${COMPOSE_PATH}" --env-file .env up
 
 del-bundle:
-	rm -r -f "${APP_PATH}/${APP_NAME}-app"
+	rm -r -f "${APP_PATH}"

@@ -4,24 +4,28 @@
 endif
 
 help:
-	echo test
+	echo "coming soon..."
 
 install-meteor:
 	npm install meteor -g
 
--build:
-	(cd ${APP_DEV_PATH} && meteor create --svelte ${APP_NAME}-app)
-	mv "${APP_DEV_PATH}/${APP_NAME}-app" "${APP_DEV_PATH}/${APP_NAME}-app-dev"
-	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && rm -r -f client imports server tests)
-	cp -a "./build/." "${APP_DEV_PATH}/${APP_NAME}-app-dev"
-	cp -a "./.env" "${APP_DEV_PATH}/${APP_NAME}-app-dev"
-	cp -a "./.env.example" "${APP_DEV_PATH}/${APP_NAME}-app-dev"
-	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && make set-up)
+init:
+	nvm use ${NODE_VERSION}
 
--build--run: -build run
+extract:
+	meteor create --svelte ${APPS_DEV_PATH}/${APP_NAME}-app
+	mv "${APPS_DEV_PATH}/${APP_NAME}-app" "${APP_DEV_PATH}"
+	(cd "${APP_DEV_PATH}" && rm -r -f client imports server tests)
+	cp -a "./build/." "${APP_DEV_PATH}"
+	cp -a "./.env" "${APP_DEV_PATH}"
+	cp -a "./.env.example" "${APP_DEV_PATH}"
+	(cd "${APP_DEV_PATH}" && make set-up)
 
--build--up: -build up
--build--up--no-docker: -build up--no-docker
+extract--run: extract run
+
+extract--deploy: extract deploy
+
+extract--up: extract up
 
 set-up:
 	meteor npm install
@@ -36,45 +40,29 @@ set-up:
 set-up--run: set-up run
 
 run:
-	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && meteor)
+	(cd "${APP_DEV_PATH}" && meteor)
 
 up: deploy run-bundle
 
-up--no-docker: deploy--no-docker run-bundle--no-docker
-
 deploy:
-	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && meteor build ${APP_DEV_PATH} --server-only --directory --architecture os.linux.x86_64)
-	mv "${APP_PATH}/bundle" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/." "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/.env" "${APP_PATH}/${APP_NAME}-app"
+	(cd "${APP_DEV_PATH}" && make deploy)
 
 deploy--run: deploy run-bundle
-
-deploy--no-docker:
-	(cd "${APP_DEV_PATH}/${APP_NAME}-app-dev" && meteor build ${APP_PATH} --server-only --directory)
-	mv "${APP_PATH}/bundle" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/.gitignore" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/Makefile" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/.env.example" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/build/random-list-app.code-workspace" "${APP_PATH}/${APP_NAME}-app"
-	cp -a "${APP_DEV_PATH}/${APP_NAME}-app-dev/.env" "${APP_PATH}/${APP_NAME}-app"
-	(cd ${APP_PATH}/${APP_NAME}-app/programs/server && npm install)
-
-deploy--run--no-docker: deploy--no-docker run-bundle--no-docker
 
 clear-docker-cache:
 	docker builder prune -f
 	docker builder prune -f
 
 run-bundle:
-	docker-compose -p ${APP_NAME} -f "${APP_PATH}/${APP_NAME}-app/docker-compose.yaml" --env-file .env up
-
-run-bundle--no-docker:
-	source "./.env"
- 	(cd "${APP_PATH}/${APP_NAME}-app" && node main.js)
+	docker-compose -p ${APP_NAME} -f "${COMPOSE_PATH}" --env-file .env up
 
 del-app:
-	rm -r -f "${APP_DEV_PATH}/${APP_NAME}-app-dev"
+	rm -r -f "${APP_DEV_PATH}"
 
 del-bundle:
-	rm -r -f "${APP_PATH}/${APP_NAME}-app"
+	rm -r -f "${APP_PATH}"
+
+del: del-app del-bundle
+
+test:
+	echo "test"
